@@ -1,9 +1,9 @@
 
-function ToDo(pTitle, pDetail, pPriority) {
-    this.title= pTitle;
-    this.detail = pDetail;
-    this.priority = pPriority;
-    this.completed = false;
+function Anime(pName, pSummary, pRanking) {
+    this.name= pName;
+    this.summary = pSummary;
+    this.ranking = pRanking;
+    this.watched = false;
   }
   var ClientNotes = [];  // our local copy of the cloud data
 
@@ -11,19 +11,19 @@ function ToDo(pTitle, pDetail, pPriority) {
 document.addEventListener("DOMContentLoaded", function (event) {
 
     document.getElementById("submit").addEventListener("click", function () {
-        var tTitle = document.getElementById("title").value;
-        var tDetail = document.getElementById("detail").value;
-        var tPriority = document.getElementById("priority").value;
-        var oneToDo = new ToDo(tTitle, tDetail, tPriority);
+        var tName = document.getElementById("name").value;
+        var tSummary = document.getElementById("summary").value;
+        var tRanking = document.getElementById("ranking").value;
+        var oneAnime = new Anime(tName, tSummary, tRanking);
 
         $.ajax({
-            url: '/NewToDo' ,
+            url: '/NewAnime' ,
             method: 'POST',
             dataType: 'json',
             contentType: 'application/json',
-            data: JSON.stringify(oneToDo),
+            data: JSON.stringify(oneAnime),
             success: function (result) {
-                console.log("added new note")
+                console.log("added new anime")
             }
 
         });
@@ -37,10 +37,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     document.getElementById("delete").addEventListener("click", function () {
         
-        var whichToDo = document.getElementById('deleteTitle').value;
+        var whichAnime = document.getElementById('deleteName').value;
         var idToDelete = "";
         for(i=0; i< ClientNotes.length; i++){
-            if(ClientNotes[i].title === whichToDo) {
+            if(ClientNotes[i].name === whichAnime) {
                 idToDelete = ClientNotes[i]._id;
            }
         }
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         if(idToDelete != "")
         {
                      $.ajax({  
-                    url: 'DeleteToDo/'+ idToDelete,
+                    url: 'DeleteAnime/'+ idToDelete,
                     type: 'DELETE',  
                     contentType: 'application/json',  
                     success: function (response) {  
@@ -67,17 +67,17 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
 
     document.getElementById("msubmit").addEventListener("click", function () {
-        var tTitle = document.getElementById("mtitle").value;
-        var tDetail = document.getElementById("mdetail").value;
-        var tPriority = document.getElementById("mpriority").value;
-        var oneToDo = new ToDo(tTitle, tDetail, tPriority);
-        oneToDo.completed =  document.getElementById("mcompleted").value;
+        var tName = document.getElementById("mname").value;
+        var tSummary = document.getElementById("msummary").value;
+        var tRanking = document.getElementById("mranking").value;
+        var oneAnime = new Anime(tName, tSummary, tRanking);
+        oneAnime.watched =  document.getElementById("mwatched").value;
         
             $.ajax({
-                url: 'UpdateToDo/'+idToFind,
+                url: 'UpdateAnime/'+idToFind,
                 type: 'PUT',
                 contentType: 'application/json',
-                data: JSON.stringify(oneToDo),
+                data: JSON.stringify(oneAnime),
                     success: function (response) {  
                         console.log(response);  
                     },  
@@ -94,21 +94,21 @@ document.addEventListener("DOMContentLoaded", function (event) {
     var idToFind = ""; // using the same value from the find operation for the modify
     // find one to modify
     document.getElementById("find").addEventListener("click", function () {
-        var tTitle = document.getElementById("modTitle").value;
+        var tName = document.getElementById("modName").value;
          idToFind = "";
         for(i=0; i< ClientNotes.length; i++){
-            if(ClientNotes[i].title === tTitle) {
+            if(ClientNotes[i].name === tName) {
                 idToFind = ClientNotes[i]._id;
            }
         }
         console.log(idToFind);
  
-        $.get("/FindToDo/"+ idToFind, function(data, status){ 
-            console.log(data[0].title);
-            document.getElementById("mtitle").value = data[0].title;
-            document.getElementById("mdetail").value= data[0].detail;
-            document.getElementById("mpriority").value = data[0].priority;
-            document.getElementById("mcompleted").value = data[0].completed;
+        $.get("/FindAnime/"+ idToFind, function(data, status){ 
+            console.log(data[0].name);
+            document.getElementById("mname").value = data[0].name;
+            document.getElementById("msummary").value= data[0].summary;
+            document.getElementById("mranking").value = data[0].ranking;
+            document.getElementById("mwatched").value = data[0].watched;
            
 
         });
@@ -126,28 +126,28 @@ ul.innerHTML = "";  // clears existing list so we don't duplicate old ones
 
 //var ul = document.createElement('ul')
 
-$.get("/ToDos", function(data, status){  // AJAX get
+$.get("/Anime", function(data, status){  // AJAX get
     ClientNotes = data;  // put the returned server json data into our local array
 
     // sort array by one property
     ClientNotes.sort(compare);  // see compare method below
     console.log(data);
     //listDiv.appendChild(ul);
-    ClientNotes.forEach(ProcessOneToDo); // build one li for each item in array
-    function ProcessOneToDo(item, index) {
+    ClientNotes.forEach(ProcessOneAnime); // build one li for each item in array
+    function ProcessOneAnime(item, index) {
         var li = document.createElement('li');
         ul.appendChild(li);
 
-        li.innerHTML=li.innerHTML + index + ": " + " Priority: " + item.priority + "  " + item.title + ":  " + item.detail + " Done? "+ item.completed;
+        li.innerHTML=li.innerHTML + "<b>" + item.name + "</b>" + "<br />" + "Rating: " + item.ranking + "/10  " + "<br />" + "Summary: " + item.summary + "<br />" + "Watched? "+ item.watched + "<br />";
     }
 });
 }
 
 function compare(a,b) {
-    if (a.completed == false && b.completed== true) {
+    if (a.watched == false && b.watched== true) {
         return -1;
     }
-    if (a.completed == false && b.completed== true) {
+    if (a.watched == false && b.watched== true) {
         return 1;
     }
     return 0;
